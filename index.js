@@ -22,6 +22,8 @@ const userRouter = require("./routes/userRoutes");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
 
+app.use(express.static("./public"));
+
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 

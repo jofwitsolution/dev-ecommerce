@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
-const { checkPermissions } = require("../utils/checkpermissions");
+const checkPermissions = require("../utils/checkpermissions");
 const { attachCookiesToResponse } = require("../utils/jwt");
 const { createTokenUser } = require("../utils/createTokenUser");
 
@@ -40,11 +40,13 @@ const updateUser = async (req, res) => {
   attachCookiesToResponse({ res, user: tokenUser });
   res.status(StatusCodes.OK).json({ user: tokenUser });
 };
+
 const updateUserPassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   if (!oldPassword || !newPassword) {
     throw new CustomError.BadRequestError("Please provide both values");
   }
+
   const user = await User.findOne({ _id: req.user.userId });
 
   const isPasswordCorrect = await user.comparePassword(oldPassword);
