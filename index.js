@@ -5,6 +5,7 @@ const express = require("express");
 const app = express();
 
 const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
 const helmet = require("helmet");
 const cors = require("cors");
 
@@ -25,6 +26,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
 
 app.use(express.static("./public"));
+app.use(fileUpload());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
