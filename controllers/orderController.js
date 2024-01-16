@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
-const { checkPermissions } = require("../utils");
+const checkPermissions = require("../utils/checkpermissions");
 
 const fakeStripeAPI = async ({ amount, currency }) => {
   const client_secret = "someRandomValue";
@@ -12,6 +12,27 @@ const fakeStripeAPI = async ({ amount, currency }) => {
 
 const createOrder = async (req, res) => {
   const { items: cartItems, tax, shippingFee } = req.body;
+  
+  {
+    "tax": 499,
+    "shippingFee": 799,
+    "items": [
+        {
+            "name": "bed",
+            "price": 2699,
+            "image": "https://dl.airtable.com/.attachmentThumbnails/e8bc3791196535af65f40e36993b9e1f/438bd160",
+            "amount": 3,
+            "product": "615c873ad584c748cc86e5bb"
+        },
+        {
+            "name": "chair",
+            "price": 2999,
+            "image": "https://dl.airtable.com/.attachmentThumbnails/e8bc3791196535af65f40e36993b9e1f/438bd160",
+            "amount": 2,
+            "product": "615e04a132ba7c9f0338f13e"
+        }
+    ]
+}
 
   if (!cartItems || cartItems.length < 1) {
     throw new CustomError.BadRequestError("No cart items provided");
@@ -45,8 +66,10 @@ const createOrder = async (req, res) => {
     // calculate subtotal
     subtotal += item.amount * price;
   }
+
   // calculate total
   const total = tax + shippingFee + subtotal;
+  
   // get client secret
   const paymentIntent = await fakeStripeAPI({
     amount: total,
@@ -67,10 +90,12 @@ const createOrder = async (req, res) => {
     .status(StatusCodes.CREATED)
     .json({ order, clientSecret: order.clientSecret });
 };
+
 const getAllOrders = async (req, res) => {
   const orders = await Order.find({});
   res.status(StatusCodes.OK).json({ orders, count: orders.length });
 };
+
 const getSingleOrder = async (req, res) => {
   const { id: orderId } = req.params;
   const order = await Order.findOne({ _id: orderId });
@@ -80,10 +105,12 @@ const getSingleOrder = async (req, res) => {
   checkPermissions(req.user, order.user);
   res.status(StatusCodes.OK).json({ order });
 };
+
 const getCurrentUserOrders = async (req, res) => {
   const orders = await Order.find({ user: req.user.userId });
   res.status(StatusCodes.OK).json({ orders, count: orders.length });
 };
+
 const updateOrder = async (req, res) => {
   const { id: orderId } = req.params;
   const { paymentIntentId } = req.body;
